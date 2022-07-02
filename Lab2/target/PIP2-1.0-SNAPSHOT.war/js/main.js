@@ -1,0 +1,107 @@
+(function () {
+    const ACCEPTED_RS = [1, 2, 3, 4, 5];
+    const MIN_X = -5;
+    const MAX_X = 3;
+
+    let canvas = document.getElementById("graph-canvas");
+
+    let rInput = document.getElementById("r");
+    let ySelect = document.getElementById("y");
+    let yInput = document.querySelector("input[name='y']");
+    let xInput = document.getElementById("x");
+
+    let errMsgPanel = document.getElementById('err-msg');
+    let submitButton = document.getElementById('submit-btn');
+    let graphPicker = new GraphPicker(canvas);
+
+    let rButtons = document.querySelectorAll("button[data-setter='r']");
+    for (let i = 0; i < rButtons.length; i++)
+        rButtons[i].addEventListener("click", onRButtonClicked);
+
+    ySelect.addEventListener("change", onYChanged);
+    xInput.addEventListener("input", onXChanged);
+    submitButton.addEventListener("click", onSubmit);
+    graphPicker.setListener(onGraphClicked);
+
+    function setErrorMsg(msg) {
+        errMsgPanel.innerText = msg;
+        if (msg != null)
+            errMsgPanel.classList.remove("hidden");
+        else
+            errMsgPanel.classList.add("hidden");
+        return false;
+    }
+
+    function onSubmit(event) {
+        if (!(checkX() && checkY() && checkR()))
+            event.preventDefault();
+    }
+
+    function onGraphClicked(x, y) {
+        if (x == null || y == null)
+            return setErrorMsg("You should first choose R value!");
+
+        xInput.value = x;
+        yInput.value = y;
+        submitButton.click();
+    }
+
+    function onRButtonClicked(e) {
+        setR(e.target.getAttribute("data-value"));
+        let selected = document.querySelector("button[data-setter='r'][state-selected]");
+        if (selected)
+            selected.removeAttribute("state-selected");
+        e.target.setAttribute("state-selected", "");
+    }
+
+    function onYChanged() {
+        graphPicker.setY(+ySelect.value);
+        yInput.value = ySelect.value;
+    }
+
+    function onXChanged() {
+        let text = xInput.value;
+        if (!isNaN(text))
+            graphPicker.setX(+text);
+    }
+
+    function setR(r) {
+        if (ACCEPTED_RS.indexOf(+r) === -1)
+            return setErrorMsg("Check your R value !!");
+        rInput.value = r;
+        graphPicker.setScale(r);
+        setErrorMsg(null);
+    }
+
+    function checkX() {
+        let value = xInput.value.trim();
+        if (value.length === 0)
+            return setErrorMsg("Enter X value, please!");
+        if (isNaN(value))
+            return setErrorMsg("X value must be a number!");
+        if (value.length > 20)
+            return setErrorMsg("X length should have no more than 20!");
+        let number = +value;
+        if (number <= MIN_X || number >= MAX_X)
+            return setErrorMsg(`X value must be greater than ${MIN_X} and lower than ${MAX_X}`);
+        return true;
+    }
+
+    function checkY() {
+        let value = yInput.value.trim();
+        if (value.length === 0)
+            return setErrorMsg("Choose Y value, pleaase!");
+        if (isNaN(value))
+            return setErrorMsg("HACKING ATTEMPT");
+        return true;
+    }
+
+    function checkR() {
+        let value = rInput.value.trim();
+        if (value.length === 0)
+            return setErrorMsg("Choose R value!");
+        if (isNaN(value))
+            return setErrorMsg("HACKING ATTEMPT");
+        return true;
+    }
+})();
